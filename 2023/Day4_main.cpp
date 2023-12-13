@@ -15,10 +15,9 @@ struct Scratchcard
     std::vector<std::string> winningNumbers;
     std::vector<std::string> gameNumbers;
 
-    bool operator<(const Scratchcard& other) const
-    {
-        return cardNumber < other.cardNumber;
-    }
+    bool operator<(const Scratchcard& other) const { return cardNumber < other.cardNumber; }
+    bool operator>(const Scratchcard& other) const { return cardNumber > other.cardNumber; }
+    bool operator==(const Scratchcard& other) const { return cardNumber == other.cardNumber; }
 };
 
 std::ostream& operator<<(std::ostream& os, const std::vector<std::string>& vec)
@@ -50,11 +49,11 @@ std::ostream& operator<<(std::ostream& os, const Scratchcard& scratchcard)
 
 std::vector<std::string> GetWinningNumbers(const std::string& line)
 {
-    std::vector<std::string> split = Jumi::Split(line, '|');
+    std::vector<std::string> split = jumi::split(line, '|');
     std::string numbers = split[0];
-    std::vector<std::string> split2 = Jumi::Split(numbers, ':');
+    std::vector<std::string> split2 = jumi::split(numbers, ':');
     numbers = split2[1];
-    Jumi::Trim(numbers);
+    jumi::trim(numbers);
 
     std::string newNumbers;
 
@@ -69,16 +68,16 @@ std::vector<std::string> GetWinningNumbers(const std::string& line)
         }
     }
 
-    std::vector<std::string> winningNumbers = Jumi::Split(newNumbers, ' ');
+    std::vector<std::string> winningNumbers = jumi::split(newNumbers, ' ');
 
     return winningNumbers;
 }
 
 std::vector<std::string> GetGameNumbers(const std::string& line)
 {
-    std::vector<std::string> split = Jumi::Split(line, '|');
+    std::vector<std::string> split = jumi::split(line, '|');
     std::string numbers = split[1];
-    numbers = Jumi::Trim(numbers);
+    numbers = jumi::trim(numbers);
 
     std::string newNumbers;
 
@@ -93,7 +92,7 @@ std::vector<std::string> GetGameNumbers(const std::string& line)
         }
     }
 
-    std::vector<std::string> gameNumbers = Jumi::Split(newNumbers, ' ');
+    std::vector<std::string> gameNumbers = jumi::split(newNumbers, ' ');
 
     return gameNumbers;
 }
@@ -156,8 +155,8 @@ int CountWins(const std::map<Scratchcard, int>& cardMap)
 
 int GetCardNumber(const std::string& line)
 {
-    std::vector<std::string> split = Jumi::Split(line, '|');
-    split = Jumi::Split(split[0], ':');
+    std::vector<std::string> split = jumi::split(line, '|');
+    split = jumi::split(split[0], ':');
     std::string card = split[0];
 
     int first{};
@@ -221,7 +220,7 @@ int main()
     ss << file.rdbuf();
     std::string contents = ss.str();
 
-    std::vector<std::string> lines = Jumi::Split(contents, '\n');
+    std::vector<std::string> lines = jumi::split(contents, '\n');
 
     std::map<Scratchcard, int> cardMap;
 

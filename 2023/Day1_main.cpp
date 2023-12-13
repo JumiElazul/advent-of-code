@@ -105,7 +105,7 @@ int main()
 
     std::stringstream ss;
     ss << file.rdbuf();
-    std::vector<std::string> lines = Jumi::Split(ss.str(), '\n');
+    std::vector<std::string> lines = jumi::split(ss.str(), '\n');
 
     int totalSum{};
 

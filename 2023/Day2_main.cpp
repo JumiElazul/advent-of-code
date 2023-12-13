@@ -31,7 +31,7 @@ int main()
     std::ostringstream ss;
     ss << file.rdbuf();
 
-    std::vector<std::string> lines = Jumi::Split(ss.str(), '\n');
+    std::vector<std::string> lines = jumi::split(ss.str(), '\n');
     std::vector<Game> games;
 
     for (std::string& line : lines)
@@ -41,17 +41,17 @@ int main()
         line = line.substr(index + 2);
         Game game{};
 
-        std::vector<std::string> rounds = Jumi::Split(line, "; ");
+        std::vector<std::string> rounds = jumi::split(line, "; ");
 
         for (const std::string& round : rounds)
         {
-            std::vector<std::string> subrounds = Jumi::Split(round, ", ");
+            std::vector<std::string> subrounds = jumi::split(round, ", ");
 
-            for (const std::string& subroundSplit : subrounds)
+            for (const std::string& subroundsplit : subrounds)
             {
-                std::vector<std::string> finalSplit = Jumi::Split(subroundSplit, ' ');
-                int count = std::stoi(finalSplit[0]);
-                std::string color = finalSplit[1];
+                std::vector<std::string> finalsplit = jumi::split(subroundsplit, ' ');
+                int count = std::stoi(finalsplit[0]);
+                std::string color = finalsplit[1];
 
                 std::cout << "COUNT: " << count << "    COLOR: " << color << '\n';
 
