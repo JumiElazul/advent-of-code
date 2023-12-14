@@ -35,13 +35,13 @@ std::ostream& operator<<(std::ostream& os, const Scratchcard& scratchcard)
     os << "Card " << scratchcard.cardNumber << ": ";
     for (const std::string& str : scratchcard.winningNumbers)
     {
-        os << str << ' ';
+        os << str << ',';
     }
-    os << " | ";
+    os << "|";
 
     for (const std::string& str : scratchcard.gameNumbers)
     {
-        os << str << ' ';
+        os << str << ',';
     }
 
     return os;
@@ -117,13 +117,13 @@ int CountWinsCard(const Scratchcard& card)
     return winCount;
 }
 
-int CountWins(const std::map<Scratchcard, int>& cardMap)
+long long CountWins(const std::map<Scratchcard, long long>& cardMap)
 {
-    int totalScore{};
+    long long totalScore{};
 
-    for (const std::pair<const Scratchcard, int>& card : cardMap)
+    for (const std::pair<const Scratchcard, long long>& card : cardMap)
     {
-        int numOfWins{};
+        long long numOfWins{};
         for (const std::string& str : card.first.gameNumbers)
         {
             auto find = std::find(card.first.winningNumbers.begin(), card.first.winningNumbers.end(), str);
@@ -134,7 +134,7 @@ int CountWins(const std::map<Scratchcard, int>& cardMap)
             }
         }
 
-        int score{ 1 };
+        long long score{ 1 };
         if (numOfWins == 0)
         {
             continue;
@@ -207,48 +207,58 @@ std::map<Scratchcard, int> ProcessScratchcards(std::map<Scratchcard, int>& scrat
     return scratchcards;
 }
 
-int main()
+std::vector<std::string> vectorize_input(std::fstream& file)
 {
-    std::ifstream file(filepath);
+    std::vector<std::string> vector;
+    std::string line_str;
 
-    if (!file)
+    while (std::getline(file, line_str))
     {
-        std::cout << "File with path " << filepath << " could not be opened\n";
+        vector.push_back(line_str);
     }
 
-    std::stringstream ss;
-    ss << file.rdbuf();
-    std::string contents = ss.str();
+    return vector;
+}
 
-    std::vector<std::string> lines = jumi::split(contents, '\n');
+int main()
+{
+    std::fstream file = jumi::open_file(filepath);
+    std::vector<std::string> lines = vectorize_input(file);
 
-    std::map<Scratchcard, int> cardMap;
+    std::map<Scratchcard, long long> cardMap;
 
     for (const std::string& line : lines)
     {
         Scratchcard card;
-        std::vector<std::string> winningNumbers = GetWinningNumbers(line);
-        std::vector<std::string> gameNumbers = GetGameNumbers(line);
+        card.winningNumbers = GetWinningNumbers(line);
+        card.gameNumbers = GetGameNumbers(line);
         card.cardNumber = GetCardNumber(line);
-
-        card.winningNumbers = std::move(winningNumbers);
-        card.gameNumbers = std::move(gameNumbers);
-
         cardMap[card] = 1;
     }
 
-    int totalscore = CountWins(cardMap);
+    long long totalscore = CountWins(cardMap);
     std::cout << "totalscore: " << totalscore << '\n';
 
-    int cardTotal = cardMap.size();
-    cardMap = ProcessScratchcards(cardMap, cardTotal);
-    int cardCount{};
-
-    for (const std::pair<const Scratchcard, int>& card : cardMap)
+    for (const std::pair<const Scratchcard, long long>& pair : cardMap)
     {
-        cardCount += card.second;
+        long long wins = CountWinsCard(pair.first);
+        long long addCount{ wins * cardMap[pair.first] };
+
+        for (int i = 1; i <= wins; ++i)
+        {
+            Scratchcard card;
+            card.cardNumber = pair.first.cardNumber + i;
+            cardMap[card] += addCount;
+        }
     }
-    std::cout << "Result: " << cardCount << '\n';
+
+    long long sum{};
+    for (const std::pair<const Scratchcard, const int>& pair : cardMap)
+    {
+        sum += pair.second;
+    }
+
+    std::cout << "Sum of total cards: " << sum << '\n';
 
     return 0;
 }
