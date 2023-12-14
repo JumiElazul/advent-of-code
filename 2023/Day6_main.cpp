@@ -64,17 +64,29 @@ bool check_win(const race& race, int64 hold_time)
 
 int64 calculate_wins(const race& race)
 {
-    int64 ways_to_win = 0;
-    int64 iterations = race.time;
+    int64 first_win_hold_time = 0;
+    int64 last_win_hold_time = 0;
 
-    for (size_t i = 1; i < static_cast<size_t>(iterations); ++i)
+    // Find the first way to win
+    for (size_t i = 1; i < static_cast<size_t>(race.time); ++i)
     {
         if (check_win(race, static_cast<int64>(i)))
         {
-            ++ways_to_win;
+            first_win_hold_time = static_cast<int64>(i);
+            break;
         }
     }
 
+    for (size_t i = static_cast<size_t>(race.time); i >= 1; --i)
+    {
+        if (check_win(race, static_cast<int64>(i)))
+        {
+            last_win_hold_time = static_cast<int64>(i);
+            break;
+        }
+    }
+
+    int64 ways_to_win = last_win_hold_time - first_win_hold_time + 1;
     return ways_to_win;
 }
 
