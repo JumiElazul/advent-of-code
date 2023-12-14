@@ -9,8 +9,8 @@ constexpr const char* filepath = "Day6_input.txt";
 
 struct race
 {
-    int32 time = 0;
-    int32 dist = 0;
+    int64 time = 0;
+    int64 dist = 0;
 };
 
 std::ostream& operator<<(std::ostream& os, const race& race)
@@ -23,8 +23,8 @@ std::vector<race> parse_input(std::fstream& fstream)
 {
     std::vector<race> races;
     std::string line;
-    std::vector<int> times;
-    std::vector<int> distances;
+    std::vector<int64> times;
+    std::vector<int64> distances;
 
     while (std::getline(fstream, line))
     {
@@ -34,7 +34,7 @@ std::vector<race> parse_input(std::fstream& fstream)
         line = line.substr(first_index, last_index + 1);
 
         std::istringstream iss(line);
-        int32 num;
+        int64 num;
 
         while (iss >> num)
         {
@@ -55,21 +55,21 @@ std::vector<race> parse_input(std::fstream& fstream)
     return races;
 }
 
-bool check_win(const race& race, int32 hold_time)
+bool check_win(const race& race, int64 hold_time)
 {
-    int32 remaining_time = race.time - hold_time;
-    int32 speed = hold_time;
+    int64 remaining_time = race.time - hold_time;
+    int64 speed = hold_time;
     return speed * remaining_time > race.dist;
 }
 
-int32 calculate_wins(const race& race)
+int64 calculate_wins(const race& race)
 {
-    int32 ways_to_win = 0;
-    int32 iterations = race.time;
+    int64 ways_to_win = 0;
+    int64 iterations = race.time;
 
     for (size_t i = 1; i < static_cast<size_t>(iterations); ++i)
     {
-        if (check_win(race, static_cast<int32>(i)))
+        if (check_win(race, static_cast<int64>(i)))
         {
             ++ways_to_win;
         }
@@ -78,25 +78,68 @@ int32 calculate_wins(const race& race)
     return ways_to_win;
 }
 
-int32 calculate_multiply_wins(const std::vector<race>& races)
+int64 calculate_multiply_wins(const std::vector<race>& races)
 {
-    int32 sum = 1;
+    int64 sum = 1;
 
     for (const race& race : races)
     {
-        int32 wins = calculate_wins(race);
+        int64 wins = calculate_wins(race);
         sum *= wins;
     }
 
     return sum;
 }
 
+race parse_input_pt2(std::fstream& file)
+{
+    std::string time;
+    std::string distance;
+    std::string line;
+
+    while (std::getline(file, line))
+    {
+        std::string category = line.substr(0, line.find_first_of(':'));
+        size_t first_index = line.find_first_of("0123456789");
+        size_t last_index = line.find_last_of("0123456789");
+        line = line.substr(first_index, last_index + 1);
+
+        for (size_t i = 0; i < line.length(); ++i)
+        {
+            if (std::isdigit(line[i]))
+            {
+                if (category == "Time")
+                {
+                    time += line[i];
+                }
+                else if (category == "Distance")
+                {
+                    distance += line[i];
+                }
+            }
+        }
+    }
+
+    return { std::stoll(time), std::stoll(distance) };
+}
+
 int main()
 {
+    // ----------------------------------------
+    // Part 1
+    // ----------------------------------------
     std::fstream file = jumi::open_file(filepath);
     std::vector<race> races { parse_input(file) };
-    int32 multiply_win_result { calculate_multiply_wins(races) };
+    int64 multiply_win_result { calculate_multiply_wins(races) };
     std::cout << "Part1 result: " << multiply_win_result << '\n';
+
+    // ----------------------------------------
+    // Part 2
+    // ----------------------------------------
+    file = jumi::open_file(filepath);
+    race race = parse_input_pt2(file);
+    int64 wins = calculate_wins(race);
+    std::cout << "Part2 result: " << wins << '\n';
 
     return 0;
 }
