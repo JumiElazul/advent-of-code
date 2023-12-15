@@ -43,6 +43,23 @@ const std::unordered_map<std::string, int32> card_strength_map =
     { "A",  14 },
 };
 
+const std::unordered_map<std::string, int32> card_strength_map_2 =
+{
+    { "J",   1 },
+    { "2",   2 },
+    { "3",   3 },
+    { "4",   4 },
+    { "5",   5 },
+    { "6",   6 },
+    { "7",   7 },
+    { "8",   8 },
+    { "9",   9 },
+    { "T",  10 },
+    { "Q",  12 },
+    { "K",  13 },
+    { "A",  14 },
+};
+
 std::ostream& operator<<(std::ostream& os, const hand& hand)
 {
     os << '(' << hand.hand << ',' << hand.bid_amount << ')';
