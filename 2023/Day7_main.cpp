@@ -1,9 +1,11 @@
 #include "jumi_utils.h"
+#include <algorithm>
 #include <unordered_map>
 #include <stdexcept>
 
 constexpr const char* filepath{ "Day7_input.txt" };
 
+using std::vector;
 using jumi::operator<<;
 
 struct hand
@@ -28,14 +30,13 @@ const std::unordered_map<std::string, int32> card_strength_map =
 {
     { "2",   2 },
     { "3",   3 },
-    { "3",   3 },
     { "4",   4 },
     { "5",   5 },
     { "6",   6 },
     { "7",   7 },
     { "8",   8 },
     { "9",   9 },
-    { "10", 10 },
+    { "T",  10 },
     { "J",  11 },
     { "Q",  12 },
     { "K",  13 },
@@ -128,14 +129,14 @@ hand_strength calculate_hand_strength(const hand& hand)
 
 bool compare_hands(const hand& hand_a, const hand& hand_b)
 {
-    // This function will return true if hand_a is the greater hand over hand_b, else false
+    // This function will return false if hand_a is the greater hand over hand_b, else true
     hand_strength strength_a = calculate_hand_strength(hand_a);
     hand_strength strength_b = calculate_hand_strength(hand_b);
 
     if (strength_a != strength_b)
     {
-        std::cout << "Cannot compare two hands of different hand strengths: " << hand_a << " to " << hand_b << '\n';
-        return false;
+        std::cerr << "Cannot compare two hands of different hand strengths: " << hand_a << " to " << hand_b << '\n';
+        return true;
     }
 
     for (size_t i = 0; i < hand_a.hand.size(); ++i)
@@ -145,18 +146,20 @@ bool compare_hands(const hand& hand_a, const hand& hand_b)
         card_a = hand_a.hand[i];
         card_b = hand_b.hand[i];
 
+        std::cerr << "Checking " << card_a << " against " << card_b << '\n';
+
         if (card_strength_map.at(card_a) > card_strength_map.at(card_b))
         {
-            return true;
+            return false;
         }
         else if (card_strength_map.at(card_a) < card_strength_map.at(card_b))
         {
-            return false;
+            return true;
         }
     }
 
     std::cout << "Two hands have the same values: [" << hand_a << " | " << hand_b << "] false will be returned\n";
-    return false;
+    return true;
 }
 
 std::unordered_map<hand_strength, std::vector<hand>> parse_hands(const std::vector<hand>& hands)
@@ -229,11 +232,60 @@ std::unordered_map<hand_strength, std::vector<hand>> parse_hands(const std::vect
     return hand_map;
 }
 
+int64 get_card_bid(const hand& hand)
+{
+    static int64 card_rank = 1;
+    int64 total_bid = card_rank * hand.bid_amount;
+    ++card_rank;
+    return total_bid;
+}
+
+int64 sum_card_list(const std::vector<hand>& card_list)
+{
+    int64 total_sum = 0;
+
+    for (const hand& hand : card_list)
+    {
+        total_sum += get_card_bid(hand);
+    }
+    return total_sum;
+}
+
+int64 calculate_card_bids(std::unordered_map<hand_strength, std::vector<hand>>& hand_strength_map)
+{
+    int64 total_sum = 0;
+
+    std::vector<hand>& curr_hands = hand_strength_map[high_card];
+    total_sum += sum_card_list(curr_hands);
+    curr_hands = hand_strength_map[one_pair];
+    total_sum += sum_card_list(curr_hands);
+    curr_hands = hand_strength_map[two_pair];
+    total_sum += sum_card_list(curr_hands);
+    curr_hands = hand_strength_map[three_of_a_kind];
+    total_sum += sum_card_list(curr_hands);
+    curr_hands = hand_strength_map[full_house];
+    total_sum += sum_card_list(curr_hands);
+    curr_hands = hand_strength_map[four_of_a_kind];
+    total_sum += sum_card_list(curr_hands);
+    curr_hands = hand_strength_map[five_of_a_kind];
+    total_sum += sum_card_list(curr_hands);
+
+    return total_sum;
+}
+
 int main()
 {
     std::fstream file = jumi::open_file(filepath);
     std::vector<hand> hands = parse_input(file);
     std::unordered_map<hand_strength, std::vector<hand>> hand_strength_map { parse_hands(hands) };
+
+    for (std::pair<const hand_strength, std::vector<hand>>& pair : hand_strength_map)
+    {
+        std::sort(pair.second.begin(), pair.second.end(), compare_hands);
+    }
+
+    int64 part_one_result = calculate_card_bids(hand_strength_map);
+    std::cout << "Part1 result: " << part_one_result << '\n';
 
     return 0;
 }
