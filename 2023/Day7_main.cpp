@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <stdexcept>
 
-#define DEBUG
+/* #define DEBUG */
 
 constexpr const char* filepath{ "Day7_input.txt" };
 
@@ -106,7 +106,6 @@ hand_strength calculate_hand_strength(const hand& hand, sln_part part = sln_part
                 highest_count = card.second;
             }
         }
-        std::cout << "Hand : " << hand << " has a joker_count: " << joker_count << " and the highest card is : " << key << " with " << highest_count << " cards.\n";
         card_count[key] += joker_count;
     }
 
@@ -398,12 +397,7 @@ int main()
         std::sort(pair.second.begin(), pair.second.end(), compare_hands_2);
     }
 
-    for (const auto& pair : hand_strength_map_2)
-    {
-        std::cout << pair.first << "   " << pair.second << '\n';
-    }
-
-    int64 part_two_result = calculate_card_bids(hand_strength_map, sln_part::part_two);
+    int64 part_two_result = calculate_card_bids(hand_strength_map_2, sln_part::part_two);
     std::cout << "Part2 result: " << part_two_result << '\n';
 
     return 0;
