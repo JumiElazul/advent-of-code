@@ -84,37 +84,7 @@ int64 walk_map(const std::unordered_map<std::string, std::vector<std::string>>& 
 
 int64 walk_map_2(const std::unordered_map<std::string, std::vector<std::string>>& map, instructions& instruction_set, const std::vector<std::string>& start_locations)
 {
-    int64 steps = 0;
-    std::vector<std::string> current_locations = start_locations;
 
-    while (true)
-    {
-        char instruction = instruction_set.get_next_instruction();
-        size_t index = char_to_index_map.at(instruction);
-        bool success = true;
-
-        for (size_t i = 0; i < current_locations.size(); ++i)
-        {
-            const std::string& curr_location = current_locations.at(i);
-            const std::vector<std::string>& next_locations = map.at(curr_location);
-
-            current_locations[i] = next_locations.at(index);
-
-            if (!current_locations[i].ends_with('Z'))
-            {
-                success = false;
-            }
-        }
-
-        ++steps;
-
-        if (success)
-        {
-            break;
-        }
-    }
-
-    return steps;
 }
 
 std::vector<std::string> find_start_locations(const std::unordered_map<std::string, std::vector<std::string>>& map)
