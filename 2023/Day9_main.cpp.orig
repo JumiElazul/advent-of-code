@@ -1,0 +1,118 @@
+#include "jumi_utils.h"
+#include <stack>
+
+using jumi::operator<<;
+constexpr const char* filepath{ "Day9_input.txt" };
+constexpr const char* sample_filepath{ "Day9_sample_input.txt" };
+
+std::vector<int32> calculate_differences()
+{
+    return {};
+}
+
+std::vector<std::vector<int64>> make_int_vector(const std::vector<std::string>& vec)
+{
+    std::vector<std::vector<int64>> result;
+    for (const std::string& str : vec)
+    {
+        std::vector<int64> line;
+        std::vector<std::string> split = jumi::split(str, ' ');
+
+        for (const auto& num : split)
+        {
+            line.emplace_back(std::stoll(num));
+        }
+
+        result.emplace_back(line);
+    }
+
+    return result;
+}
+
+std::vector<int64> get_difference_vector(const std::vector<int64>& vec)
+{
+    std::vector<int64> differences;
+
+    for (size_t i = 0; i < vec.size() - 1; ++i)
+    {
+        int64 difference = vec[i + 1] - vec[i];
+        differences.emplace_back(difference);
+    }
+
+    return differences;
+}
+
+bool is_zero_vector(const std::vector<int64>& vec)
+{
+    for (int64 num  : vec)
+>>>>>>> bbfc77d (Solved day 10 part 1)
+    {
+        if (num != 0)
+        {
+            return false;
+        }
+    }
+<<<<<<< HEAD
+    return vec.size() > 0 ? true : false;
+}
+
+int64 process_line(const std::vector<int32>& line)
+{
+    std::vector<std::vector<int32>> history;
+    history.emplace_back(line);
+
+    std::vector<int32> diff_vec = line;
+    while (!is_zero_vec(diff_vec))
+    {
+        diff_vec = get_difference_vec(diff_vec);
+        history.emplace_back(diff_vec);
+    }
+
+    int64 diff = 0;
+    for (size_t i = history.size() - 1; i >= 0; --i)
+    {
+        history[i].push_back(diff);
+    }
+}
+
+int64 process_input(const std::vector<std::vector<int32>>& input)
+{
+    int64 sum = 0;
+
+    for (const std::vector<int32>& vec : input)
+    {
+        sum += process_line(vec);
+    }
+
+    return sum;
+}
+
+std::vector<std::vector<int32>> convert_to_int_vec(const std::vector<std::string>& vec)
+{
+    std::vector<std::vector<int32>> numbers;
+
+    for (const std::string& line : vec)
+    {
+        std::vector<std::string> split = jumi::split(line, ' ');
+        std::vector<int32> new_vec;
+
+        for (const std::string& c : split)
+        {
+            new_vec.emplace_back(std::stoi(c));
+        }
+
+        numbers.emplace_back(new_vec);
+    }
+
+    return numbers;
+}
+
+int main()
+{
+    std::fstream file = jumi::open_file(filepath);
+    std::vector<std::string> contents = jumi::vectorize_file(file);
+    std::vector<std::vector<int32>> numbers = convert_to_int_vec(contents);
+    process_line(numbers[0]);
+
+    return 0;
+}
