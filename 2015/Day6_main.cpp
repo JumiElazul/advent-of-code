@@ -118,7 +118,8 @@ instruction_set get_instruction_set(const std::string& line)
     return set;
 }
 
-void execute_instruction(std::array<std::array<int, 1000>, 1000>& lights, instruction_set set, const std::function<void(int&, instruction)>& strategy)
+template<size_t col, size_t row>
+void execute_instruction(std::array<std::array<int, col>, row>& lights, instruction_set set, const std::function<void(int&, instruction)>& strategy)
 {
     size_t start_row = set.start_row;
     size_t end_row = set.end_row;
@@ -135,7 +136,8 @@ void execute_instruction(std::array<std::array<int, 1000>, 1000>& lights, instru
     }
 }
 
-size_t count_lights(const std::array<std::array<int, 1000>, 1000>& lights)
+template<size_t col, size_t row>
+size_t count_lights(const std::array<std::array<int, col>, row>& lights)
 {
     size_t result = 0;
     for (size_t i = 0; i < lights.size(); ++i)
