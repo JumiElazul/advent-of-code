@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <array>
 #include <iostream>
+#include <functional>
 
 // --- Day 6: Probably a Fire Hazard ---
 // Because your neighbors keep defeating you in the holiday house decorating contest year after year, you've decided 
@@ -117,7 +118,7 @@ instruction_set get_instruction_set(const std::string& line)
     return set;
 }
 
-void execute_instruction(std::array<std::array<int, 1000>, 1000>& lights, instruction_set set, bool part_one)
+void execute_instruction(std::array<std::array<int, 1000>, 1000>& lights, instruction_set set, const std::function<void(int&, instruction)>& strategy)
 {
     size_t start_row = set.start_row;
     size_t end_row = set.end_row;
@@ -129,46 +130,7 @@ void execute_instruction(std::array<std::array<int, 1000>, 1000>& lights, instru
     {
         for (size_t j = start_row; j <= end_row; ++j)
         {
-            switch (instruct)
-            {
-                case instruction::toggle:
-                {
-                    if (part_one)
-                    {
-                        lights[i][j] = !lights[i][j];
-                    }
-                    else
-                    {
-                        lights[i][j] += 2;
-                    }
-                    break;
-                }
-                case instruction::turn_on:
-                {
-                    if (part_one)
-                    {
-                        lights[i][j] = true;
-                    }
-                    else
-                    {
-                        lights[i][j] += 1;
-                    }
-                    break;
-                }
-                case instruction::turn_off:
-                {
-                    if (part_one)
-                    {
-                        lights[i][j] = false;
-                    }
-                    else
-                    {
-                        lights[i][j] -= 1;
-                    }
-                    break;
-                }
-            }
-            lights[i][j] = std::max(lights[i][j], 0);
+            strategy(lights[i][j], instruct);
         }
     }
 }
@@ -197,8 +159,22 @@ void part_one()
     for (const std::string& line : lines)
     {
         instruction_set set{ get_instruction_set(line) };
+        auto strategy_part_one = [](int& light, instruction instruct) {
+            switch (instruct)
+            {
+                case instruction::toggle:
+                    light = !light;
+                    break;
+                case instruction::turn_on:
+                    light = true;
+                    break;
+                case instruction::turn_off:
+                    light = false;
+                    break;
+            }
+        };
 
-        execute_instruction(lights, set, true);
+        execute_instruction(lights, set, strategy_part_one);
     }
 
     size_t light_count = count_lights(lights);
@@ -215,8 +191,23 @@ void part_two()
     for (const std::string& line : lines)
     {
         instruction_set set{ get_instruction_set(line) };
+        auto strategy_part_two = [](int& light, instruction instruct) {
+            switch (instruct)
+            {
+                case instruction::toggle:
+                    light += 2;
+                    break;
+                case instruction::turn_on:
+                    light += 1;
+                    break;
+                case instruction::turn_off:
+                    light -= 1;
+                    break;
+            }
+            light = std::max(light, 0);
+        };
 
-        execute_instruction(lights, set, false);
+        execute_instruction(lights, set, strategy_part_two);
     }
 
     size_t light_count = count_lights(lights);
