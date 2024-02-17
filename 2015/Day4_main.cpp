@@ -22,8 +22,9 @@
 // --- Part Two ---
 // Now find one that starts with six zeroes.
 
-const std::string part_one_prefix = "00000";
-const std::string part_two_prefix = "000000";
+constexpr std::string part_one_prefix = "00000";
+constexpr std::string part_two_prefix = "000000";
+constexpr int iterations = 1000000000;
 
 std::string calculate_MD5(const std::string& input)
 {
@@ -46,8 +47,7 @@ void part_one()
     contents = jumi::trim(contents);
     std::string md5;
 
-    constexpr int end = 1000000000;
-    for (size_t i = 0; i < end; ++i)
+    for (size_t i = 0; i < iterations; ++i)
     {
         std::string new_value = contents + std::to_string(i);
         md5 = calculate_MD5(new_value);
@@ -67,8 +67,7 @@ void part_two()
     contents = jumi::trim(contents);
     std::string md5;
 
-    constexpr int end = 1000000000;
-    for (size_t i = 0; i < end; ++i)
+    for (size_t i = 0; i < iterations; ++i)
     {
         std::string new_value = contents + std::to_string(i);
         md5 = calculate_MD5(new_value);
