@@ -1,5 +1,7 @@
 #include "jumi_utils.h"
+#include <functional>
 #include <iostream>
+#include <unordered_map>
 
 // --- Day 7: Some Assembly Required ---
 // This year, Santa brought little Bobby Tables a set of wires and bitwise logic gates! Unfortunately, 
@@ -9,7 +11,6 @@
 // A signal is provided to each wire by a gate, another wire, or some specific value. Each wire can only get a
 // signal from one source, but can provide its signal to multiple destinations. A gate provides no signal until 
 // all of its inputs have a signal.
-
 // The included instructions booklet describes how to connect the parts together: x AND y -> z means to connect 
 // wires x and y to an AND gate, and then connect its output to wire z.
 
@@ -45,15 +46,38 @@
 // y: 456
 // In little Bobby's kit's instructions booklet (provided as your puzzle input), what signal is ultimately provided to wire a?
 
+struct instruction
+{
+    std::string op;
+    std::string src1;
+    std::string src2;
+    std::string dest;
+
+    instruction(const std::string& operation, const std::string& source1, const std::string& source2, const std::string& destination)
+        : op{ operation }, src1{ source1 }, src2{ source2 }, dest{ destination } { }
+};
+
+std::unordered_map<std::string, std::uint32_t> wire_signals;
+
+std::unordered_map<std::string, std::function<std::uint16_t(std::uint16_t, std::uint16_t)>> operations
+{
+    {"AND", [](uint16_t a, uint16_t b) { return a & b; }},
+    {"OR", [](uint16_t a, uint16_t b) { return a | b; }},
+    {"LSHIFT", [](uint16_t a, uint16_t b) { return a << b; }},
+    {"RSHIFT", [](uint16_t a, uint16_t b) { return a >> b; }},
+    {"NOT", [](uint16_t a, uint16_t) { return ~a; }}
+};
+
+instruction parse_instruction(const std::string& line)
+{
+
+}
+
 void part_one()
 {
     std::fstream file{ jumi::open_file("Day7_input.txt") };
     std::vector<std::string> contents{ jumi::read_lines(file) };
 
-    for (const std::string& str : contents)
-    {
-        std::cout << str << '\n';
-    }
 }
 
 int main()
