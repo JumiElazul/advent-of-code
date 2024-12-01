@@ -67,5 +67,6 @@ void part_two()
 
 int main()
 {
+    part_one();
     part_two();
 }
