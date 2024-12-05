@@ -12,11 +12,12 @@ void part_one(const std::vector<std::string>& contents)
     size_t count = 0;
 
     // Check all rows
-    for (int row = 0; row < contents.size(); ++row)
+    for (const std::string& line : contents)
     {
-        for (int col = 0; col < contents[row].size() - 4; ++col)
+        for (int i = 0; i < line.size() - 3; ++i)
         {
-            if (contents[row].substr(col, 4) == target1 || contents[row].substr(col, 4) == target2)
+            std::string slice = line.substr(i, 4);
+            if (slice == target1 || slice == target2)
             {
                 ++count;
             }
@@ -24,46 +25,44 @@ void part_one(const std::vector<std::string>& contents)
     }
 
     // Check all cols
-    for (int col = 0; col < contents[0].size(); ++col)
+    for (int i = 0; i < contents[0].size(); ++i)
     {
-        for (int row = 0; row < contents[col].size() - 4; ++row)
+        for (int j = 0; j < contents.size() - 3; ++j)
         {
-            std::string concat = std::string(1, contents[row][col]) + std::string(1, contents[row + 1][col]) + std::string(1, contents[row + 2][col]) + std::string(1, contents[row + 3][col]);
-            if (concat == target1 || concat == target2)
+            std::stringstream ss;
+            ss << contents[j][i] << contents[j + 1][i] << contents[j + 2][i] << contents[j + 3][i];
+            std::string slice = ss.str();
+            if (slice == target1 || slice == target2)
             {
                 ++count;
             }
         }
     }
 
-    // Check diagonal down right
-    for (int row = 0; row < contents[0].size() - 4; ++row)
+    // Check diag down right
+    for (int i = 0; i < contents.size() - 3; ++i)
     {
-        for (int col = 0; col < contents[row].size() - 4; ++row)
+        for (int j = 0; j < contents[i].size() - 3; ++j)
         {
-            char first = contents[row][col];
-            char second = contents[row + 1][col + 1];
-            char third = contents[row + 2][col + 2];
-            char fourth = contents[row + 3][col + 3];
-            std::string concat = std::string(1, first) + std::string(1, second) + std::string(1, third) + std::string(1, fourth);
-            if (concat == target1 || concat == target2)
+            std::stringstream ss;
+            ss << contents[i][j] << contents[i + 1][j + 1] << contents[i + 2][j + 2] << contents[i + 3][j + 3];
+            std::string slice = ss.str();
+            if (slice == target1 || slice == target2)
             {
                 ++count;
             }
         }
     }
 
-    // Check diagonal down left
-    for (int row = 3; row < contents[0].size(); ++row)
+    // Check diag down left
+    for (int i = 0; i < contents.size() - 3; ++i)
     {
-        for (int col = 3; col < contents[row].size(); ++row)
+        for (int j = 3; j < contents.size(); ++j)
         {
-            char first = contents[row][col];
-            char second = contents[row - 1][col - 1];
-            char third = contents[row - 2][col - 2];
-            char fourth = contents[row - 3][col - 3];
-            std::string concat = std::string(1, first) + std::string(1, second) + std::string(1, third) + std::string(1, fourth);
-            if (concat == target1 || concat == target2)
+            std::stringstream ss;
+            ss << contents[i][j] << contents[i + 1][j - 1] << contents[i + 2][j - 2] << contents[i + 3][j - 3];
+            std::string slice = ss.str();
+            if (slice == target1 || slice == target2)
             {
                 ++count;
             }
@@ -73,9 +72,42 @@ void part_one(const std::vector<std::string>& contents)
     std::cout << "[Part One] The result is " << count << '\n';
 }
 
+void part_two(const std::vector<std::string>& contents)
+{
+    static const std::string target1 = "MAS";
+    static const std::string target2 = "SAM";
+    size_t count = 0;
+
+    for (int row = 1; row < contents.size() - 1; ++row)
+    {
+        for (int col = 1; col < contents[row].size() - 1; ++col)
+        {
+            if (contents[row][col] == 'A')
+            {
+                std::stringstream dr;
+                dr << contents[row - 1][col - 1] << contents[row][col] << contents[row + 1][col + 1];
+
+                std::stringstream dl;
+                dl << contents[row - 1][col + 1] << contents[row][col] << contents[row + 1][col - 1];
+
+                std::string dr_str = dr.str();
+                std::string dl_str = dl.str();
+
+                if ((dr_str == target1 || dr_str == target2) && (dl_str == target1 || dl_str == target2))
+                {
+                    ++count;
+                }
+            }
+        }
+    }
+
+    std::cout << "[Part Two] The result is " << count << '\n';
+}
+
 int main()
 {
     std::fstream file = jumi::open_file(filepath);
     std::vector<std::string> contents = jumi::read_lines(file);
     part_one(contents);
+    part_two(contents);
 }
