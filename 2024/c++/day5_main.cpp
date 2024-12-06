@@ -54,35 +54,40 @@ std::vector<std::vector<int>> build_instruction_map(const std::vector<std::strin
     return instruction_map;
 }
 
+bool is_valid_instruction(const std::unordered_map<int, std::vector<int>>& print_map, const std::vector<int>& instruction_list)
+{
+    std::vector<int> printed;
+    bool valid = true;
+
+    for (const int i : instruction_list)
+    {
+        const std::vector<int>& rules = print_map.at(i);
+        for (const int rule : rules)
+        {
+            if (std::find(printed.begin(), printed.end(), rule) != printed.end())
+            {
+                valid = false;
+                break;
+            }
+        }
+
+        if (!valid)
+            break;
+
+        printed.push_back(i);
+    }
+    return valid;
+}
+
 void part_one(const std::unordered_map<int, std::vector<int>>& print_map, const std::vector<std::vector<int>>& instruction_map)
 {
     size_t sum = 0;
     for (const std::vector<int>& instruction_list : instruction_map)
     {
-        bool valid = true;
-        std::vector<int> printed;
-
-        for (const int i : instruction_list)
-        {
-            const std::vector<int>& rules = print_map.at(i);
-            for (const int rule : rules)
-            {
-                if (std::find(printed.begin(), printed.end(), rule) != printed.end())
-                {
-                    valid = false;
-                    break;
-                }
-            }
-
-            if (!valid)
-                break;
-
-            printed.push_back(i);
-        }
+        bool valid = is_valid_instruction(print_map, instruction_list);
         if (valid)
         {
-            size_t index = printed.size() / 2;
-            sum += printed.at(index);
+            sum += instruction_list.at(instruction_list.size() / 2);
         }
     }
 
@@ -91,7 +96,23 @@ void part_one(const std::unordered_map<int, std::vector<int>>& print_map, const 
 
 void part_two(const std::unordered_map<int, std::vector<int>>& print_map, const std::vector<std::vector<int>>& instruction_map)
 {
+    size_t sum = 0;
+    for (const std::vector<int>& instruction_list : instruction_map)
+    {
+        bool valid = is_valid_instruction(print_map, instruction_list);
+        if (!valid)
+        {
+            for (int i = 0; i < instruction_list.size(); ++i)
+            {
+                const std::vector<int>& rules = print_map.at(i);
+                for (int j = i + 1; j < instruction_list.size(); ++j)
+                {
 
+                }
+            }
+        }
+    }
+    std::cout << "[Part Two] The final result is " << sum << '\n';
 }
 
 int main()
