@@ -1,5 +1,7 @@
 #include "jumi_utils.h"
+#include <algorithm>
 #include <iostream>
+#include <iterator>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -41,35 +43,9 @@ public:
         }
     }
 
-    std::string disk_str_representation() const
+    size_t compute_checksum()
     {
-        std::stringstream ss;
 
-        for (const data_block& block : _data_blocks)
-        {
-            if (block.ids.empty())
-            {
-                int count = block.capacity;
-                while (count > 0)
-                {
-                    ss << '.';
-                    --count;
-                }
-            }
-            else
-            {
-                for (const int i : block.ids)
-                {
-                    std::string num_str = std::to_string(i);
-                    for (const char c : num_str)
-                    {
-                        ss << c;
-                    }
-                }
-            }
-        }
-
-        return ss.str();
     }
 
 private:
@@ -87,8 +63,8 @@ int main()
     std::string contents = jumi::stringify_file(file);
     std::string test_str = "35493538261755937276396055768953609918499";
     disk d(test_str);
-    std::string rep = d.disk_str_representation();
+    size_t result = d.compute_checksum();
     std::cout << "test_str: " << test_str << '\n';
-    std::cout << rep << '\n';
+    std::cout << "[Part One] The final result checksum is " << result << '\n';
 }
 
