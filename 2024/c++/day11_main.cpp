@@ -1,6 +1,7 @@
 #include "jumi_utils.h"
 #include <iostream>
 #include <vector>
+#include <unordered_map>
 #include <string>
 
 std::vector<size_t> get_stones(const std::string& line)
@@ -14,59 +15,6 @@ std::vector<size_t> get_stones(const std::string& line)
     return stones;
 }
 
-int count_digits(size_t num)
-{
-    int count = 0;
-    do
-    {
-        num /= 10;
-        ++count;
-    } while (num != 0);
-    return count;
-}
-
-void calculate_part(std::vector<size_t>& stones, int n)
-{
-    for (int i = 0; i < n; ++i)
-    {
-        std::vector<size_t> next_stones;
-        next_stones.reserve(stones.size() * 2);
-
-        for (auto& stone : stones)
-        {
-            if (stone == 0)
-            {
-                next_stones.push_back(1);
-            }
-            else
-            {
-                int num_digits = count_digits(stone);
-                if (num_digits % 2 == 0)
-                {
-                    int half = num_digits / 2;
-                    size_t divisor = 1;
-
-                    for (int i = 0; i < half; ++i)
-                        divisor *= 10;
-
-                    size_t left = stone / divisor;
-                    size_t right = stone % divisor;
-                    next_stones.push_back(left);
-                    next_stones.push_back(right);
-                }
-                else
-                {
-                    stone *= 2024;
-                    next_stones.push_back(stone);
-                }
-            }
-        }
-        stones.swap(next_stones);
-    }
-
-    std::cout << "[" << n << " iterations] The final number of stones is " << stones.size() << '\n';
-}
-
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& list)
 {
@@ -76,11 +24,73 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& list)
     return os;
 }
 
+struct pair_hash
+{
+    template<class T1, class T2>
+    std::size_t operator()(const std::pair<T1, T2>& pair) const
+    {
+        return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
+    }
+};
+
+size_t recurse(size_t num, int blinks)
+{
+    static std::unordered_map<std::pair<size_t, int>, size_t, pair_hash> cache;
+
+    if (blinks == 0)
+        return 1;
+
+    size_t& ref = cache[{ num, blinks }];
+    if (ref != 0)
+        return cache[{ num, blinks }];
+
+    if (num == 0)
+        return ref = recurse(1, blinks - 1);
+
+    std::string str = std::to_string(num);
+    if (str.size() % 2 == 0)
+    {
+        std::string first = str.substr(0, str.size() / 2);
+        std::string second = str.substr(str.size() / 2, str.size() / 2);
+        return ref = recurse(std::stoull(first), blinks - 1) + recurse(std::stoull(second), blinks - 1);
+    }
+    else
+    {
+        return ref = recurse(num * 2024, blinks - 1);
+    }
+}
+
+void part_one(const std::vector<size_t>& stones)
+{
+    size_t result = 0;
+
+    jumi::scoped_timer t("part_one");
+    for (const size_t s : stones)
+    {
+        result += recurse(s, 25);
+    }
+
+    std::cout << "[Part One] The final number of stones is " << result << '\n';
+}
+
+void part_two(const std::vector<size_t>& stones)
+{
+    size_t result = 0;
+
+    jumi::scoped_timer t("part_two");
+    for (const size_t s : stones)
+    {
+        result += recurse(s, 75);
+    }
+
+    std::cout << "[Part Two] The final number of stones is " << result << '\n';
+}
+
 int main()
 {
     std::fstream file = jumi::open_file("input/day11_input.txt");
     std::string line = jumi::stringify_file(file);
     std::vector<size_t> stones = get_stones(line);
-    calculate_part(stones, 25);
-    calculate_part(stones, 75);
+    part_one(stones);
+    part_two(stones);
 }
