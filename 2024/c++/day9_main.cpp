@@ -8,71 +8,61 @@ constexpr const char* filepath = "input/day9_input.txt";
 
 struct data_block
 {
-    int id;
+    std::vector<int> ids;
+    int capacity;
 };
 
 std::vector<data_block> get_data_block_representation(const std::string& diskmap)
 {
-    std::vector<data_block> blocks;
-    blocks.reserve(diskmap.size());
-    for (int i = 0; i < diskmap.size(); ++i)
+    std::vector<data_block> blocks(diskmap.size());
+    int block_id = 0;
+
+    for (size_t i = 0; i < diskmap.size(); ++i)
     {
-        int count = diskmap[i] - '0';
-        while (count > 0)
+        const int block_size = diskmap[i] - '0';
+        blocks[i].capacity = block_size;
+        if (i % 2 == 0)
         {
-            if (i % 2 == 0)
-            {
-                blocks.emplace_back(i / 2);
-            }
-            else
-            {
-                blocks.emplace_back(-1);
-            }
-            --count;
+            blocks[i].ids = std::vector<int>(block_size, block_id);
+            ++block_id;
         }
     }
 
     return blocks;
 }
 
-size_t compute_checksum(const std::vector<data_block>& data_blocks)
+void part_one(std::vector<data_block> data_blocks)
 {
-    size_t checksum = 0;
+    auto find_empty_block = [](const auto& elem) { return elem.ids.size() != static_cast<size_t>(elem.capacity); };
+    auto find_file_block = [](const auto &elem) { return elem.ids.size() > 0; };
 
-    for (int i = 0; i < data_blocks.size(); ++i)
+    std::vector<data_block>::iterator empty_it = std::find_if(data_blocks.begin(), data_blocks.end(), find_empty_block);
+    std::vector<data_block>::reverse_iterator file_it = std::find_if(data_blocks.rbegin(), data_blocks.rend(), find_file_block);
+
+    while (empty_it != data_blocks.end() && file_it != data_blocks.rend() && empty_it < std::prev(file_it.base()))
     {
-        if (data_blocks[i].id != -1)
+        while (empty_it->ids.size() != static_cast<size_t>(empty_it->capacity) && file_it->ids.size() > 0)
         {
-            checksum += (i * data_blocks[i].id);
+            auto val = file_it->ids.back();
+            file_it->ids.pop_back();
+            empty_it->ids.emplace_back(val);
+        }
+
+        empty_it = std::find_if(empty_it, data_blocks.end(), find_empty_block);
+        file_it = std::find_if(file_it, data_blocks.rend(), find_file_block);
+    }
+
+    size_t checksum = 0;
+    size_t index = 0;
+    for (const auto& block : data_blocks)
+    {
+        for (const auto &id : block.ids)
+        {
+            checksum += index * id;
+            ++index;
         }
     }
 
-    return checksum;
-}
-
-void part_one(std::vector<data_block>& data_blocks)
-{
-    auto find_empty = [](const data_block& block) -> bool {
-        return block.id == -1;
-    };
-
-    auto find_file = [](const data_block& block) {
-        return block.id >= 0;
-    };
-
-    std::vector<data_block>::iterator empty = std::find_if(data_blocks.begin(), data_blocks.end(), find_empty);
-    std::vector<data_block>::reverse_iterator file = std::find_if(data_blocks.rbegin(), data_blocks.rend(), find_file);
-
-    while (empty != data_blocks.end() && file != data_blocks.rend() && empty < std::prev(file.base())) 
-    {
-        *empty = *file;
-        file->id = -1;
-
-        empty = std::find_if(empty, data_blocks.end(), find_empty);
-        file = std::find_if(file, data_blocks.rend(), find_file);
-    }
-
-    size_t checksum = compute_checksum(data_blocks);
     std::cout << "[Part One] The checksum is " << checksum << '\n';
 }
 
