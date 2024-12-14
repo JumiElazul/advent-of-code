@@ -145,32 +145,77 @@ void part_one(std::vector<robot> robots)
 void part_two(std::vector<robot> robots)
 {
     std::cout << "Starting part two simulation, type any key to step, q will exit\n";
-    std::cin.get();
 
     std::vector<std::vector<int>> room(room_height);
     for (int i = 0; i < room_height; ++i)
         room[i].resize(room_width);
 
-    int step = 0;
+    for (const robot& r : robots)
     {
+        room[r.y_pos][r.x_pos] += 1;
+    }
+
+    int step = 79;
+    int increment = 101;
+    // int step = 52;
+    // int increment = 103;
+
+    for (int i = 0; i < step; ++i)
+    {
+        // Step 52 first horizontal
+        // Step 155 next horizontal
+        // Step 79 first vertical
+        // Step 180 first horizontal
         for (robot& r : robots)
         {
-            if (room[r.y_pos][r.x_pos] > 0)
-                room[r.y_pos][r.x_pos] -= 1;
+            room[r.y_pos][r.x_pos] -= 1;
             r.x_pos = (r.x_pos + r.direction.x + room_width) % room_width;
             r.y_pos = (r.y_pos + r.direction.y + room_height) % room_height;
             room[r.y_pos][r.x_pos] += 1;
         }
+    }
 
+    std::string input;
+
+    while (input != "q" || input != "quit")
+    {
+        std::cout << "Step: " << step << '\n';
         for (const auto& line : room)
         {
             for (const int i : line)
             {
-                std::cout << i;
+                if (i != 0)
+                    std::cout << i;
+                std::cout << ' ';
             }
             std::cout << '\n';
         }
-        ++step;
+
+        std::getline(std::cin, input);
+
+        if (input == "q" || input == "quit")
+            break;
+
+        input == "b" ? step -= increment : step += increment;
+
+        for (robot& r : robots)
+        {
+            for (int i = 0; i < increment; ++i)
+            {
+                room[r.y_pos][r.x_pos] -= 1;
+                if (input == "b")
+                {
+                    r.x_pos = (r.x_pos - r.direction.x + room_width) % room_width;
+                    r.y_pos = (r.y_pos - r.direction.y + room_height) % room_height;
+                }
+                else
+                {
+                    r.x_pos = (r.x_pos + r.direction.x + room_width) % room_width;
+                    r.y_pos = (r.y_pos + r.direction.y + room_height) % room_height;
+                }
+                room[r.y_pos][r.x_pos] += 1;
+            }
+        }
     }
 }
 
@@ -180,11 +225,6 @@ int main()
     std::vector<std::string> contents = jumi::read_lines(file);
     std::vector<robot> robots = get_robots(contents);
 
-    if (SDL_Init(SDL_INIT_VIDEO) != 0)
-    {
-        std::cout << "Error\n";
-    }
-
-    // part_one(robots);
-    // part_two(robots);
+    part_one(robots);
+    part_two(robots);
 }
