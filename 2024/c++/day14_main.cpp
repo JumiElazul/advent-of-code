@@ -5,6 +5,9 @@
 #include <string>
 #include <vector>
 
+static int room_width = 101;
+static int room_height = 103;
+
 struct vec2
 {
     int x;
@@ -36,7 +39,8 @@ std::ostream& operator<<(std::ostream& os, const robot& r)
 
 enum class quadrant
 {
-    top_left, top_right, bottom_left, bottom_right
+    top_left, top_right, bottom_left, bottom_right,
+    invalid
 };
 
 quadrant determine_quadrant(int x, int y, int width, int height)
@@ -50,21 +54,60 @@ quadrant determine_quadrant(int x, int y, int width, int height)
         return quadrant::top_right;
     else if (x < mid_x && y > mid_y)
         return quadrant::bottom_left;
-    else
+    else if (x > mid_x && y > mid_y)
         return quadrant::bottom_right;
+    else
+        return quadrant::invalid;
 }
 
-void part_one(std::vector<robot>& robots)
+std::vector<robot> get_robots(const std::vector<std::string>& contents)
 {
-    static int room_width = 101;
-    static int room_height = 103;
+    std::vector<robot> robots;
+    std::regex pattern("-?\\d+,-?\\d+");
+    std::smatch match;
+
+    for (const std::string& line : contents)
+    {
+        std::string::const_iterator it = line.begin();
+        robot r{ -1, -1, 0, 0 };
+
+        while (it != line.end())
+        {
+            std::regex_search(it, line.end(), match, pattern);
+            std::string match_str = match.str();
+            std::vector<std::string> pair = jumi::split(match_str, ',');
+
+            int first = std::stoi(pair[0]);
+            int second = std::stoi(pair[1]);
+
+            if (r.x_pos == -1 && r.y_pos == -1)
+            {
+                r.x_pos = first;
+                r.y_pos = second;
+            }
+            else
+            {
+                r.direction = vec2{ first, second };
+            }
+
+            it = match.suffix().first;
+        }
+
+        robots.push_back(r);
+    }
+
+    return robots;
+}
+
+void part_one(std::vector<robot> robots)
+{
 
     for (int i = 0; i < 100; ++i)
     {
         for (robot& r : robots)
         {
-            r.x_pos += r.direction.x % room_width;
-            r.y_pos += r.direction.y % room_height;
+            r.x_pos = (r.x_pos + r.direction.x + room_width) % room_width;
+            r.y_pos = (r.y_pos + r.direction.y + room_height) % room_height;
         }
     }
 
@@ -90,6 +133,8 @@ void part_one(std::vector<robot>& robots)
             case quadrant::bottom_right:
                 ++bottom_right;
                 break;
+            case quadrant::invalid:
+                break;
         }
     }
 
@@ -97,44 +142,36 @@ void part_one(std::vector<robot>& robots)
     std::cout << "[Part One] The safety factor after 100 seconds is " << result << '\n';
 }
 
-std::vector<robot> get_robots(const std::vector<std::string>& contents)
+void part_two(std::vector<robot> robots)
 {
-    std::vector<robot> robots;
-    std::regex pattern("-?\\d+,-?\\d+");
-    std::smatch match;
+    std::cout << "Starting part two simulation, type any key to step, q will exit\n";
+    std::cin.get();
 
-    for (const std::string& line : contents)
+    std::vector<std::vector<int>> room(room_height);
+    for (int i = 0; i < room_height; ++i)
+        room[i].resize(room_width);
+
+    int step = 0;
     {
-        std::string::const_iterator it = line.begin();
-        robot r{ -1, -1, 0, 0 };
-
-        while (it != line.end())
+        for (robot& r : robots)
         {
-            std::regex_search(it, line.end(), match, pattern);
-            std::string match_str = match.str();
-            // std::cout << match_str << '\n';
-            std::vector<std::string> pair = jumi::split(match_str, ',');
-
-            int first = std::stoi(pair[0]);
-            int second = std::stoi(pair[1]);
-
-            if (r.x_pos == -1 && r.y_pos == -1)
-            {
-                r.x_pos = first;
-                r.y_pos = second;
-            }
-            else
-            {
-                r.direction = vec2{ first, second };
-            }
-
-            it = match.suffix().first;
+            if (room[r.y_pos][r.x_pos] > 0)
+                room[r.y_pos][r.x_pos] -= 1;
+            r.x_pos = (r.x_pos + r.direction.x + room_width) % room_width;
+            r.y_pos = (r.y_pos + r.direction.y + room_height) % room_height;
+            room[r.y_pos][r.x_pos] += 1;
         }
 
-        robots.push_back(r);
+        for (const auto& line : room)
+        {
+            for (const int i : line)
+            {
+                std::cout << i;
+            }
+            std::cout << '\n';
+        }
+        ++step;
     }
-
-    return robots;
 }
 
 int main()
@@ -142,10 +179,12 @@ int main()
     std::fstream file = jumi::open_file("input/day14_input.txt");
     std::vector<std::string> contents = jumi::read_lines(file);
     std::vector<robot> robots = get_robots(contents);
-    part_one(robots);
 
-    // for (const robot& r : robots)
-    // {
-    //     std::cout << r << '\n';
-    // }
+    if (SDL_Init(SDL_INIT_VIDEO) != 0)
+    {
+        std::cout << "Error\n";
+    }
+
+    // part_one(robots);
+    // part_two(robots);
 }
