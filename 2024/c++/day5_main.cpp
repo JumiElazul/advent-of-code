@@ -4,8 +4,7 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
-
-constexpr const char* filepath = "input/day5_input.txt";
+#include <unordered_set>
 
 std::unordered_map<int, std::vector<int>> build_print_map(const std::vector<std::string>& contents)
 {
@@ -79,6 +78,14 @@ bool is_valid_instruction(const std::unordered_map<int, std::vector<int>>& print
     return valid;
 }
 
+std::ostream& operator<<(std::ostream& os, const std::vector<int>& list)
+{
+    for (const int i : list)
+        os << i << ' ';
+
+    return os;
+}
+
 void part_one(const std::unordered_map<int, std::vector<int>>& print_map, const std::vector<std::vector<int>>& instruction_map)
 {
     size_t sum = 0;
@@ -102,22 +109,22 @@ void part_two(const std::unordered_map<int, std::vector<int>>& print_map, const 
         bool valid = is_valid_instruction(print_map, instruction_list);
         if (!valid)
         {
-            for (int i = 0; i < instruction_list.size(); ++i)
-            {
-                const std::vector<int>& rules = print_map.at(i);
-                for (int j = i + 1; j < instruction_list.size(); ++j)
-                {
+            std::cout << "Invalid instruction list: " << instruction_list << '\n';
+            std::unordered_set<int> visited;
 
-                }
+            for (const int i : instruction_list)
+            {
+
             }
         }
     }
+
     std::cout << "[Part Two] The final result is " << sum << '\n';
 }
 
 int main()
 {
-    std::fstream file = jumi::open_file(filepath);
+    std::fstream file = jumi::open_file("input/day5_input.txt");
     std::vector<std::string> contents = jumi::read_lines(file);
     std::unordered_map<int, std::vector<int>> print_map = build_print_map(contents);
     std::vector<std::vector<int>> instruction_map = build_instruction_map(contents);
