@@ -3,30 +3,48 @@
 #include <stdexcept>
 #include <vector>
 #include <string>
-#include <optional>
 
-enum class direction
-{
-    north, south, east, west
-};
-
-std::string direction_to_str(direction dir)
-{
-    switch (dir)
-    {
-        case direction::north: return "^";
-        case direction::south: return "v";
-        case direction::east: return ">";
-        case direction::west: return "<";
-    }
-    return "";
-}
+enum class direction { north, south, east, west };
+static const char BOX_CHAR = 'O';
 
 struct coord
 {
     int x;
     int y;
 };
+
+struct direction_info
+{
+    direction dir;
+    int dx;
+    int dy;
+    char symbol;
+};
+
+static const direction_info DIRECTION_INFO[]
+{
+    { direction::north, 0, -1, '^' },
+    { direction::south, 0,  1, 'v' },
+    { direction::east,  1,  0, '>' },
+    { direction::west, -1,  0, '<' },
+};
+
+std::string direction_to_str(direction dir)
+{
+    for (auto& info : DIRECTION_INFO)
+        if (info.dir == dir) return std::string(1, info.symbol);
+
+    return "";
+}
+
+std::pair<int, int> get_direction_offset(direction d)
+{
+    for (auto& info : DIRECTION_INFO)
+    {
+        if (info.dir == d) return { info.dx, info.dy };
+    }
+    return { 0, 0 };
+}
 
 std::ostream& operator<<(std::ostream& os, const std::vector<std::vector<char>>& grid)
 {
@@ -111,48 +129,22 @@ coord get_starting_location(const std::vector<std::vector<char>>& grid)
 
 char check_collision(std::vector<std::vector<char>> grid, int x, int y, direction d)
 {
-    switch (d)
-    {
-        case direction::north:
-            if (grid[y - 1][x] != '.') return grid[y - 1][x];
-            break;
-        case direction::south:
-            if (grid[y + 1][x] != '.') return grid[y + 1][x];
-            break;
-        case direction::east:
-            if (grid[y][x + 1] != '.') return grid[y][x + 1];
-            break;
-        case direction::west:
-            if (grid[y][x - 1] != '.') return grid[y][x - 1];
-            break;
-    }
+    auto [dx, dy] = get_direction_offset(d);
+    int nx = x + dx;
+    int ny = y + dy;
 
-    return '.';
+    if (nx < 0 || nx >= grid[0].size() || ny < 0 || ny >= grid.size())
+        return '#';
+
+    return grid[ny][nx];
 }
 
-coord move_direction(std::vector<std::vector<char>>& grid, const coord& curr_coord, direction d)
+coord move_player(std::vector<std::vector<char>>& grid, const coord& curr_coord, direction d)
 {
-    coord cached = curr_coord;
-    coord new_coord = curr_coord;
-
-    switch (d)
-    {
-        case direction::north:
-            --new_coord.y;
-            break;
-        case direction::south:
-            ++new_coord.y;
-            break;
-        case direction::east:
-            ++new_coord.x;
-            break;
-        case direction::west:
-            --new_coord.x;
-            break;
-    }
+    auto [dx, dy] = get_direction_offset(d);
+    coord new_coord = { curr_coord.x + dx, curr_coord.y + dy };
     grid[new_coord.y][new_coord.x] = '@';
-    grid[cached.y][cached.x] = '.';
-
+    grid[curr_coord.y][curr_coord.x] = '.';
     return new_coord;
 }
 
@@ -188,57 +180,37 @@ void draw_grid(int step, const std::vector<std::vector<char>>& grid, const coord
 
 bool try_move_box(std::vector<std::vector<char>>& grid, const coord& curr_coord, direction d)
 {
-    static char box_char = 'O';
-    coord box_location = curr_coord;
-    coord initial_box_location = box_location;
+    auto [dx, dy] = get_direction_offset(d);
 
-    switch (d)
+    coord check_pos = { curr_coord.x + dx, curr_coord.y + dy };
+    coord last_box_pos = check_pos;
+
+    while (grid[last_box_pos.y][last_box_pos.x] == BOX_CHAR)
     {
-        case direction::north:
+        last_box_pos.x += dx;
+        last_box_pos.y += dy;
+
+        if (last_box_pos.x < 0 || last_box_pos.x >= grid[0].size()  ||
+            last_box_pos.y < 0 || last_box_pos.y >= grid.size()     ||
+            (grid[last_box_pos.y][last_box_pos.x] != '.' && grid[last_box_pos.y][last_box_pos.x] != BOX_CHAR)) 
         {
-            box_location.y -= 1;
-            initial_box_location = box_location;
-            while (grid[box_location.y][box_location.x] == box_char)
-            {
-                box_location.y -=1;
-            }
-        } break;
-        case direction::south:
-        {
-            box_location.y += 1;
-            initial_box_location = box_location;
-            while (grid[box_location.y][box_location.x] == box_char)
-            {
-                box_location.y +=1;
-            }
-        } break;
-        case direction::east:
-        {
-            box_location.x += 1;
-            initial_box_location = box_location;
-            while (grid[box_location.y][box_location.x] == box_char)
-            {
-                box_location.x +=1;
-            }
-        } break;
-        case direction::west:
-        {
-            box_location.x -= 1;
-            initial_box_location = box_location;
-            while (grid[box_location.y][box_location.x] == box_char)
-            {
-                box_location.x -=1;
-            }
-        } break;
+            return false;
+        }
     }
 
-    const char final_char = grid[box_location.y][box_location.x];
-    if (final_char == '.')
+    if (grid[last_box_pos.y][last_box_pos.x] == '.') 
     {
-        grid[initial_box_location.y][initial_box_location.x] = '.';
-        grid[box_location.y][box_location.x] = box_char;
+        while (last_box_pos.x != curr_coord.x + dx || last_box_pos.y != curr_coord.y + dy) 
+        {
+            coord prev = { last_box_pos.x - dx, last_box_pos.y - dy };
+            grid[last_box_pos.y][last_box_pos.x] = BOX_CHAR;
+            last_box_pos = prev;
+        }
+
+        grid[last_box_pos.y][last_box_pos.x] = '.';
         return true;
     }
+
     return false;
 }
 
@@ -257,16 +229,17 @@ void part_one(std::vector<std::vector<char>> grid, const std::vector<direction>&
         //     break;
 
         char collision_char = check_collision(grid, current_loc.x, current_loc.y, d);
+
         if (collision_char == '.')
         {
-            current_loc = move_direction(grid, current_loc, d);
+            current_loc = move_player(grid, current_loc, d);
         }
-        else if (collision_char == 'O')
+        else if (collision_char == BOX_CHAR)
         {
-            bool player_can_move = try_move_box(grid, current_loc, d);
-
-            if (player_can_move)
-                current_loc = move_direction(grid, current_loc, d);
+            if (try_move_box(grid, current_loc, d))
+            {
+                current_loc = move_player(grid, current_loc, d);
+            }
         }
 
         ++step;
