@@ -11,6 +11,8 @@ struct coord
     int y;
 };
 
+enum class direction { north, south, east, west };
+
 std::pair<coord, coord> get_start_and_end_location(const std::vector<std::string>& grid)
 {
     std::pair<coord, coord> result;
@@ -35,6 +37,8 @@ std::pair<coord, coord> get_start_and_end_location(const std::vector<std::string
 void part_one(const std::vector<std::string>& grid)
 {
     auto [start, end] = get_start_and_end_location(grid);
+    direction starting_direction = direction::east;
+    int score = 0;
 }
 
 int main()
