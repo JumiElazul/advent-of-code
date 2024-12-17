@@ -66,11 +66,54 @@ void part_one(std::vector<data_block> data_blocks)
     std::cout << "[Part One] The checksum is " << checksum << '\n';
 }
 
+void part_two(std::vector<data_block> data_blocks)
+{
+    auto find_empty_block = [](const auto& elem) { return elem.ids.size() != static_cast<size_t>(elem.capacity); };
+    auto find_file_block = [](const auto &elem) { return elem.ids.size() > 0; };
+
+    std::vector<data_block>::iterator empty_it = std::find_if(data_blocks.begin(), data_blocks.end(), find_empty_block);
+    std::vector<data_block>::reverse_iterator file_it = std::find_if(data_blocks.rbegin(), data_blocks.rend(), find_file_block);
+
+    while (empty_it != data_blocks.end() && file_it != data_blocks.rend() && empty_it < std::prev(file_it.base()))
+    {
+        bool move_empty = false;
+        while (empty_it->ids.size() != static_cast<size_t>(empty_it->capacity) && file_it->ids.size() > 0)
+        {
+            if (empty_it->capacity >= file_it->ids.size())
+            {
+                auto val = file_it->ids.back();
+                file_it->ids.pop_back();
+                empty_it->ids.emplace_back(val);
+                move_empty = true;
+            }
+        }
+
+        if (move_empty)
+            empty_it = std::find_if(empty_it, data_blocks.end(), find_empty_block);
+
+        file_it = std::find_if(file_it, data_blocks.rend(), find_file_block);
+    }
+
+    size_t checksum = 0;
+    size_t index = 0;
+    for (const auto& block : data_blocks)
+    {
+        for (const auto &id : block.ids)
+        {
+            checksum += index * id;
+            ++index;
+        }
+    }
+
+    std::cout << "[Part One] The checksum is " << checksum << '\n';
+}
+
 int main()
 {
     std::fstream file = jumi::open_file(filepath);
     std::string contents = jumi::stringify_file(file);
     std::vector<data_block> data_blocks = get_data_block_representation(contents);
     part_one(data_blocks);
+    part_two(data_blocks);
 }
 
