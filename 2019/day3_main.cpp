@@ -1,4 +1,6 @@
 #include "jumi_utils.h"
+#include <algorithm>
+#include <climits>
 #include <iostream>
 #include <unordered_map>
 #include <vector>
@@ -81,7 +83,27 @@ void part_one(const std::vector<std::string>& lines)
         }
     }
 
+    std::unordered_set<coord, coord_hash> intersection;
+    for (const coord& c : line1_visited)
+    {
+        if (line2_visited.find(c) != line2_visited.end())
+        {
+            intersection.insert(c);
+        }
+    }
 
+    int min_distance = INT_MAX;
+
+    for (const coord& c : intersection)
+    {
+        int dist = std::abs(c.x) + std::abs(c.y);
+        if (dist < min_distance)
+        {
+            min_distance = dist;
+        }
+    }
+
+    std::cout << "[Part One] The mininmum distance for an intersection is: " << min_distance << '\n';
 }
 
 int main()
