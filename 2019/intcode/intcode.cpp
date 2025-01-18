@@ -9,7 +9,7 @@
 std::ostream& operator<<(std::ostream& os, const instruction& instr)
 {
     os << "instruction={opcode=" << instr.opcode << ", lhs_loc=" <<
-        instr.lhs_loc << ", rhs_loc=" << instr.rhs_loc << ", dest=" << instr.dest << "}";
+        instr.lhs_loc.value_or(-1) << ", rhs_loc=" << instr.rhs_loc.value_or(-1) << ", dest=" << instr.dest.value_or(-1) << "}";
     return os;
 }
 
@@ -42,18 +42,26 @@ intcode::intcode(const std::vector<int>& instruction_stream)
 
 void intcode::add()
 {
+    _current_instruction.lhs_loc = _instructions[_ip++];
+    _current_instruction.rhs_loc = _instructions[_ip++];
+    _current_instruction.dest = _instructions[_ip++];
     std::cout << "add instruction: " << _current_instruction;
-    int lhs = _instructions[_current_instruction.lhs_loc];
-    int rhs = _instructions[_current_instruction.rhs_loc];
-    _instructions[_current_instruction.dest] = lhs + rhs;
+
+    int lhs = _instructions[_current_instruction.lhs_loc.value()];
+    int rhs = _instructions[_current_instruction.rhs_loc.value()];
+    _instructions[_current_instruction.dest.value()] = lhs + rhs;
 }
 
 void intcode::mul()
 {
+    _current_instruction.lhs_loc = _instructions[_ip++];
+    _current_instruction.rhs_loc = _instructions[_ip++];
+    _current_instruction.dest = _instructions[_ip++];
     std::cout << "mul instruction: " << _current_instruction;
-    int lhs = _instructions[_current_instruction.lhs_loc];
-    int rhs = _instructions[_current_instruction.rhs_loc];
-    _instructions[_current_instruction.dest] = lhs * rhs;
+
+    int lhs = _instructions[_current_instruction.lhs_loc.value()];
+    int rhs = _instructions[_current_instruction.rhs_loc.value()];
+    _instructions[_current_instruction.dest.value()] = lhs * rhs;
 }
 
 void intcode::terminate()
@@ -87,8 +95,5 @@ instruction intcode::fetch_instruction()
 
     instruction curr_instruction;
     curr_instruction.opcode = _instructions[_ip++];
-    curr_instruction.lhs_loc = _instructions[_ip++];
-    curr_instruction.rhs_loc = _instructions[_ip++];
-    curr_instruction.dest = _instructions[_ip++];
     return curr_instruction;
 }

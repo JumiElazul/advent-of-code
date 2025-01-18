@@ -4,15 +4,16 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <optional>
 
 std::vector<int> get_opcodes(std::string& contents);
 
 struct instruction
 {
     int opcode;
-    int lhs_loc;
-    int rhs_loc;
-    int dest;
+    std::optional<int> lhs_loc;
+    std::optional<int> rhs_loc;
+    std::optional<int> dest;
 };
 
 std::ostream& operator<<(std::ostream& os, const instruction& instr);
