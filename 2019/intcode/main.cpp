@@ -1,7 +1,6 @@
 #include "jumi_utils.h"
 #include "intcode.h"
 #include <string>
-#include <vector>
 
 int main(int argc, char* argv[])
 {
@@ -13,8 +12,8 @@ int main(int argc, char* argv[])
 
     std::string arg = argv[1];
     std::fstream file = jumi::open_file(arg);
-    std::string contents = jumi::stringify_file(file);
-    std::vector<int> instruction_stream = get_opcodes(contents);
+    std::string instruction_stream = jumi::stringify_file(file);
+
     intcode c(instruction_stream);
     c.execute_program();
 }
