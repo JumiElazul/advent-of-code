@@ -1,5 +1,6 @@
 #include "intcode.h"
 #include <array>
+#include <initializer_list>
 #include <string>
 #include <iostream>
 
@@ -49,6 +50,16 @@ intcode::intcode(const std::string& instruction_stream)
     : _instructions(get_opcodes(instruction_stream))
     , _ip()
     , _curr_instr()
+    , _io({ {}, {}, 0 })
+{
+
+}
+
+intcode::intcode(const std::string& instruction_stream, const std::vector<int>& input)
+    : _instructions(get_opcodes(instruction_stream))
+    , _ip()
+    , _curr_instr()
+    , _io({ input, {}, 0 })
 {
 
 }
@@ -68,6 +79,16 @@ void intcode::execute_program()
             (this->*(find_instruction->second.func))();
         }
     }
+}
+
+const std::vector<int>& intcode::output() const noexcept
+{
+    return _io.output;
+}
+
+void intcode::add_input(int input)
+{
+    _io.input.push_back(input);
 }
 
 void intcode::add()
@@ -91,16 +112,26 @@ void intcode::mul()
 void intcode::inp()
 {
     int dest = write_param(_curr_instr, 0);
-    intcode_std_out("intcode_std_input > ", false);
     std::string input;
-    std::getline(std::cin, input);
-    _instructions[dest] = std::stoi(input);
+
+    if (_io.ip < _io.input.size())
+    {
+        int input = _io.input[_io.ip++];
+        _instructions[dest] = input;
+    }
+    else
+    {
+        intcode_std_out("intcode_std_input > ", false);
+        std::getline(std::cin, input);
+        _instructions[dest] = std::stoi(input);
+    }
 }
 
 void intcode::out()
 {
     int val = read_param(_curr_instr, 0);
     intcode_std_out("intcode_std_output > ", false);
+    _io.output.push_back(val);
     std::cout << val << "\n";
 }
 

@@ -28,6 +28,13 @@ struct instruction
     int param_count;
 };
 
+struct io
+{
+    std::vector<int> input;
+    std::vector<int> output;
+    size_t ip;
+};
+
 std::ostream& operator<<(std::ostream& os, const instruction& instr);
 
 class intcode
@@ -41,12 +48,16 @@ class intcode
     };
 public:
     intcode(const std::string& instruction_stream);
+    intcode(const std::string& instruction_stream, const std::vector<int>& input);
     void execute_program();
+    const std::vector<int>& output() const noexcept;
+    void add_input(int input);
 
 private:
     std::vector<int> _instructions;
     int _ip;
     instruction _curr_instr;
+    io _io;
     std::unordered_map<int, opcode_info> _opcode_map = 
     {
         { 1,  { &intcode::add, "add",                     3 }},
